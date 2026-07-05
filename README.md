@@ -1,187 +1,228 @@
-# 🤖 Rule-Based AI Chatbot
+"""
+=====================================================================
+ RULE-BASED AI CHATBOT — STREAMLIT WEB APP VERSION
+=====================================================================
+ Same rule-based logic as chatbot.py (if-elif-else, dictionaries,
+ no AI/ML libraries) but with a web-based chat UI powered by
+ Streamlit instead of the terminal.
 
-A simple, beginner-friendly chatbot built entirely with **core Python** —
-no AI APIs, no machine learning libraries, no external services. It uses
-only `if-elif-else` logic, loops, functions, and dictionaries to hold a
-conversation.
+ Run with:
+     streamlit run streamlit_app.py
+=====================================================================
+"""
 
-The project ships with **two interfaces** that share the exact same
-rule-based logic:
+import random
+import streamlit as st
 
-- 🖥️ **`chatbot.py`** — a terminal/CLI chatbot
-- 🌐 **`streamlit_app.py`** — a web-based chat UI built with Streamlit
 
----
+# ---------------------------------------------------------------
+# SECTION 1: RESPONSE DICTIONARIES (identical rule-based logic)
+# ---------------------------------------------------------------
 
-## 📋 Features
+GREETING_KEYWORDS = ["hi", "hello", "hey", "good morning",
+                     "good afternoon", "good evening"]
 
-- Runs continuously until the user types `exit`, `quit`, or `bye`
-- Recognizes multiple variations of greetings (`hi`, `hello`, `hey`, `good morning`, etc.)
-- Answers identity/status questions (`how are you`, `who are you`, `what can you do`, `help`, `thanks`)
-- Shares general knowledge facts about `python`, `ai`, `machine learning`, `chatbot`, `programming`
-- Handles small talk: jokes, motivation, `good night`, `good luck`
-- Gracefully handles unrecognized input with a fallback message
-- Normalizes all input using `.lower().strip()` so casing/spacing doesn't matter
-- Counts how many messages/questions the user sent during the session
-- Stores the entire conversation and displays it (in the terminal at exit, or
-  in a collapsible panel in the web app)
-- Friendly welcome and goodbye messages
-- 20+ predefined responses across multiple categories
-- Web version adds: chat bubble UI, sidebar live stats, and a one-click
-  **Reset conversation** button
+GREETING_RESPONSES = [
+    "Hello there! How can I help you today?",
+    "Hi! Great to see you.",
+    "Hey! What's on your mind?",
+    "Greetings! I'm ready to chat.",
+]
 
----
+GENERAL_KNOWLEDGE_RESPONSES = {
+    "python": "Python is a popular, beginner-friendly programming "
+              "language known for its simple, readable syntax.",
+    "ai": "AI (Artificial Intelligence) is the field of building "
+          "machines that can perform tasks that normally need human "
+          "intelligence.",
+    "machine learning": "Machine Learning is a branch of AI where "
+                         "computers learn patterns from data instead "
+                         "of being explicitly programmed.",
+    "chatbot": "A chatbot is a program that simulates conversation "
+               "with users. This one is a simple rule-based chatbot!",
+    "programming": "Programming means writing instructions (code) "
+                   "that tell a computer exactly what to do.",
+}
 
-## 🛠️ Technologies Used
+SMALL_TALK_RESPONSES = {
+    "tell me a joke": [
+        "Why do programmers prefer dark mode? Because light attracts bugs!",
+        "Why did the computer go to therapy? It had too many issues.",
+        "I would tell you a UDP joke, but you might not get it.",
+    ],
+    "motivation": [
+        "You're doing great! Keep pushing forward, one step at a time.",
+        "Every expert was once a beginner. Keep coding!",
+        "Believe in yourself — progress is progress, no matter how small.",
+    ],
+    "good night": [
+        "Good night! Rest well and code more tomorrow.",
+        "Sweet dreams! See you in the next session.",
+    ],
+    "good luck": [
+        "Good luck! You've got this.",
+        "Wishing you all the best!",
+    ],
+}
 
-- **Python 3** (standard library only) for the core logic
-- `random` module (built-in) — used only to pick between a few pre-written
-  replies, still 100% rule-based (no AI/ML involved)
-- **Streamlit** — for the optional web-based chat interface
+EXIT_KEYWORDS = ["exit", "quit", "bye"]
 
-No other external packages are required.
 
----
+# ---------------------------------------------------------------
+# SECTION 2: HELPER FUNCTIONS
+# ---------------------------------------------------------------
 
-## 📁 Project Structure
+def contains_any(user_input, keyword_list):
+    """Check whether user_input contains any keyword from keyword_list."""
+    for keyword in keyword_list:
+        if keyword in user_input:
+            return True
+    return False
 
-```
-rule_based_chatbot/
-│
-├── chatbot.py           # Terminal/CLI chatbot
-├── streamlit_app.py      # Web-based chatbot (Streamlit UI)
-├── README.md              # Project documentation (this file)
-└── screenshots/            # Folder for demo screenshots
-```
 
----
+def get_response(user_input):
+    """
+    Core rule-based logic: takes normalized input and returns a
+    reply string using if-elif-else checks, same as the CLI version.
+    """
 
-## ▶️ How to Run
+    # ---- Exit words are handled specially in the UI, but we still
+    # give a friendly reply if the bot logic is asked directly ----
+    if user_input in EXIT_KEYWORDS or "bye" in user_input:
+        return "Goodbye! Thanks for chatting with me. Have a great day!"
 
-### Option 1: Terminal Version (`chatbot.py`)
+    # ---- 1. GREETINGS ----
+    elif contains_any(user_input, GREETING_KEYWORDS):
+        return random.choice(GREETING_RESPONSES)
 
-1. Make sure Python 3 is installed:
-   ```bash
-   python3 --version
-   ```
-2. Navigate to the project folder:
-   ```bash
-   cd rule_based_chatbot
-   ```
-3. Run the chatbot:
-   ```bash
-   python3 chatbot.py
-   ```
-4. Start chatting! Type `exit`, `quit`, or `bye` to end the session.
+    # ---- 2. IDENTITY / STATUS QUESTIONS ----
+    elif "how are you" in user_input:
+        return "I'm just lines of code, but I'm running perfectly. Thanks for asking!"
 
-### Option 2: Web Version (`streamlit_app.py`)
+    elif "who are you" in user_input or "what is your name" in user_input:
+        return "I'm ChatBot, a simple rule-based chatbot built in Python."
 
-1. Install Streamlit (one-time setup):
-   ```bash
-   pip install streamlit
-   ```
-2. Navigate to the project folder:
-   ```bash
-   cd rule_based_chatbot
-   ```
-3. Launch the web app:
-   ```bash
-   streamlit run streamlit_app.py
-   ```
-4. Your browser will open automatically at `http://localhost:8501`.
-5. Chat using the input box at the bottom. Type `exit`, `quit`, or `bye`
-   to end the session, or use the **Reset conversation** button in the
-   sidebar to start over.
+    elif "what can you do" in user_input or user_input == "help":
+        return ("I can greet you, answer basic questions about Python/AI, "
+                "tell jokes, give motivation, and chat casually. "
+                "Just type something and see!")
 
----
+    elif "thanks" in user_input or "thank you" in user_input:
+        return "You're welcome! Happy to help."
 
-## 💬 Sample Conversation (Terminal Version)
+    # ---- 3. GENERAL KNOWLEDGE ----
+    elif contains_any(user_input, GENERAL_KNOWLEDGE_RESPONSES.keys()):
+        for keyword, fact in GENERAL_KNOWLEDGE_RESPONSES.items():
+            if keyword in user_input:
+                return fact
 
-```
-============================================================
- WELCOME TO THE RULE-BASED AI CHATBOT
-============================================================
-Type 'exit', 'quit', or 'bye' anytime to end the chat.
-Try greetings, questions, or ask about python/ai/chatbot!
+    # ---- 4. SMALL TALK ----
+    elif contains_any(user_input, SMALL_TALK_RESPONSES.keys()):
+        for keyword, replies in SMALL_TALK_RESPONSES.items():
+            if keyword in user_input:
+                return random.choice(replies)
 
-You: hello
-ChatBot: Hi! Great to see you.
-You: what is your name
-ChatBot: I'm ChatBot, a simple rule-based chatbot built in Python.
-You: python
-ChatBot: Python is a popular, beginner-friendly programming language known for its simple, readable syntax.
-You: tell me a joke
-ChatBot: Why do programmers prefer dark mode? Because light attracts bugs!
-You: motivation
-ChatBot: You're doing great! Keep pushing forward, one step at a time.
-You: asdkjasd
-ChatBot: Sorry, I don't understand that. Try asking something else.
-You: bye
+    # ---- 5. UNKNOWN INPUT ----
+    else:
+        return "Sorry, I don't understand that. Try asking something else."
 
-ChatBot: Goodbye! Thanks for chatting with me. Have a great day!
-============================================================
- Total questions asked: 7
-============================================================
- CONVERSATION HISTORY
-============================================================
-1. You : hello
-   Bot : Hi! Great to see you.
-2. You : what is your name
-   Bot : I'm ChatBot, a simple rule-based chatbot built in Python.
-3. You : python
-   Bot : Python is a popular, beginner-friendly programming language known for its simple, readable syntax.
-4. You : tell me a joke
-   Bot : Why do programmers prefer dark mode? Because light attracts bugs!
-5. You : motivation
-   Bot : You're doing great! Keep pushing forward, one step at a time.
-6. You : asdkjasd
-   Bot : Sorry, I don't understand that. Try asking something else.
-7. You : bye
-   Bot : Goodbye!
-============================================================
-```
 
-## 🌐 Sample Conversation (Web Version)
+# ---------------------------------------------------------------
+# SECTION 3: STREAMLIT PAGE CONFIG & SESSION STATE
+# ---------------------------------------------------------------
+# Streamlit re-runs the whole script on every interaction, so any
+# data that must persist (chat history, question count, whether the
+# chat has ended) is stored in st.session_state.
+# ---------------------------------------------------------------
 
-In the Streamlit app, the same exchange appears as chat bubbles:
+st.set_page_config(page_title="Rule-Based AI Chatbot", page_icon="🤖")
 
-- **You:** hello → **Bot:** Hi! Great to see you.
-- **You:** python → **Bot:** Python is a popular, beginner-friendly programming language known for its simple, readable syntax.
-- **You:** bye → **Bot:** Goodbye! Thanks for chatting with me. Have a great day!
+if "history" not in st.session_state:
+    st.session_state.history = []       # list of (role, message) tuples
 
-The sidebar shows a live **Questions asked** counter, and an expander at
-the bottom of the page shows the full conversation history.
+if "question_count" not in st.session_state:
+    st.session_state.question_count = 0
 
----
+if "chat_ended" not in st.session_state:
+    st.session_state.chat_ended = False
 
-## 🎓 Learning Outcomes
 
-By building and studying this project, you will understand:
+# ---------------------------------------------------------------
+# SECTION 4: PAGE HEADER
+# ---------------------------------------------------------------
 
-- How to structure a Python project with clean, commented, modular code
-- How `if-elif-else` chains are used to implement decision-making logic
-- How infinite `while True` loops work and how to break out of them safely
-- How to use functions to organize code into reusable, readable blocks
-- How to use dictionaries and lists to store and organize data efficiently
-- How to normalize and process user input (`.lower().strip()`)
-- How to maintain state across a program's runtime (counters, history lists)
-- How to reuse the same core logic across two different interfaces (CLI vs. web)
-- How Streamlit's `session_state` is used to persist data across reruns
-- The foundational logic behind how real chatbots (even AI-powered ones)
-  route input to responses — before adding NLP/ML on top
+st.title("🤖 Rule-Based AI Chatbot")
+st.caption(
+    "A simple chatbot built with pure Python if-elif-else logic — "
+    "no AI APIs or ML models. Type **exit**, **quit**, or **bye** to end the chat."
+)
 
----
+# Sidebar: live stats + reset button
+with st.sidebar:
+    st.header("📊 Session Stats")
+    st.metric("Questions asked", st.session_state.question_count)
+    if st.button("🔄 Reset conversation"):
+        st.session_state.history = []
+        st.session_state.question_count = 0
+        st.session_state.chat_ended = False
+        st.rerun()
 
-## 🚀 Future Improvements
 
-1. **NLP-based intent matching** — use libraries like spaCy or NLTK to handle
-   typos, synonyms, and sentence structure instead of exact substring matching.
-2. **Machine learning classifier** — train a simple intent classifier (e.g.,
-   scikit-learn's Naive Bayes/SVM on labeled example phrases) so the bot
-   generalizes beyond hardcoded keywords.
-3. **LLM integration** — connect to a model like Claude via the Anthropic API
-   for open-ended, context-aware conversation instead of fixed replies.
-4. **Persistent memory** — save conversation history to a file or database
-   (SQLite/JSON) so the bot remembers users across sessions.
-5. **Voice interface** — add speech-to-text input and text-to-speech output
-   (e.g., `speech_recognition` + `pyttsx3`) to turn it into a voice assistant.
+# ---------------------------------------------------------------
+# SECTION 5: RENDER EXISTING CHAT HISTORY
+# ---------------------------------------------------------------
+# Loop through everything stored so far and redraw it as chat
+# bubbles (Streamlit re-runs top to bottom on every message).
+# ---------------------------------------------------------------
+
+for role, message in st.session_state.history:
+    with st.chat_message(role):
+        st.write(message)
+
+
+# ---------------------------------------------------------------
+# SECTION 6: CHAT INPUT & RESPONSE LOGIC
+# ---------------------------------------------------------------
+
+if st.session_state.chat_ended:
+    st.info("The conversation has ended. Click **Reset conversation** in the "
+            "sidebar to start a new chat.")
+else:
+    user_input_raw = st.chat_input("Type your message here...")
+
+    if user_input_raw:
+        # Normalize input exactly like the CLI version
+        user_input = user_input_raw.lower().strip()
+
+        # Show the user's message immediately
+        with st.chat_message("user"):
+            st.write(user_input_raw)
+        st.session_state.history.append(("user", user_input_raw))
+        st.session_state.question_count += 1
+
+        # Get the bot's reply using the same rule-based logic
+        bot_reply = get_response(user_input)
+
+        with st.chat_message("assistant"):
+            st.write(bot_reply)
+        st.session_state.history.append(("assistant", bot_reply))
+
+        # If the user said an exit word, end the chat session
+        if user_input in EXIT_KEYWORDS or "bye" in user_input:
+            st.session_state.chat_ended = True
+            st.rerun()
+
+
+# ---------------------------------------------------------------
+# SECTION 7: CONVERSATION HISTORY EXPANDER (like the CLI printout)
+# ---------------------------------------------------------------
+
+with st.expander("📜 View full conversation history"):
+    if not st.session_state.history:
+        st.write("(No conversation yet.)")
+    else:
+        for i in range(0, len(st.session_state.history), 2):
+            pair = st.session_state.history[i:i + 2]
+            for role, msg in pair:
+                label = "You" if role == "user" else "Bot"
+                st.write(f"**{label}:** {msg}")
